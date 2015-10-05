@@ -32,6 +32,7 @@ import uuid
 import commands
 from stompest.error import StompProtocolError
 
+
 class StompSession(object):
     """This object implements an abstract STOMP protocol session.
     
@@ -123,7 +124,7 @@ class StompSession(object):
         self.__check('subscribe', [self.CONNECTED])
         frame, token = commands.subscribe(destination, headers, receipt, version=self.version)
         if token in self._subscriptions:
-            raise StompProtocolError('Already subscribed [%s=%s]' % token)
+            raise StompProtocolError(u'Already subscribed [{0:s}={0:s}]'.format(token))
         self._receipt(receipt)
         self._subscriptions[token] = (self._nextSubscription(), destination, copy.deepcopy(headers), receipt, context)
         return frame, token
@@ -301,7 +302,7 @@ class StompSession(object):
         """Flush all active subscriptions and return an iterator over the :meth:`subscribe` parameters (**destinations**, **header**, **receipt**, **context**) which you can consume to replay the subscriptions upon the next :meth:`connect`."""
         subscriptions = self._subscriptions
         self._flush()
-        for (_, destination, headers, receipt, context) in sorted(subscriptions.itervalues()):
+        for (_, destination, headers, receipt, context) in sorted(subscriptions.values()):
             yield destination, headers, receipt, context
 
     def subscription(self, token):

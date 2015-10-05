@@ -29,8 +29,9 @@ StompFrame(command=u'DISCONNECT', headers={u'receipt': 'message-12345'})
 
 .. seealso :: Specification of STOMP protocols `1.0 <http://stomp.github.com//stomp-specification-1.0.html>`_ and `1.1 <http://stomp.github.com//stomp-specification-1.1.html>`_, your favorite broker's documentation for additional STOMP headers.
 """
-from stompest.error import StompProtocolError
+import six
 
+from stompest.error import StompProtocolError
 from .frame import StompFrame, StompHeartBeat
 from .spec import StompSpec
 
@@ -71,7 +72,7 @@ def connect(login=None, passcode=None, headers=None, versions=None, host=None, h
         try:
             heartBeats = tuple(int(t) for t in heartBeats)
             if not all(t >= 0 for t in heartBeats):
-                raise
+                raise ValueError("Bad Heartbeat Value {}".format(heartBeats))
             heartBeats = '%d,%d' % heartBeats
         except:
             raise StompProtocolError('Invalid heart-beats (two non-negative integers required): %s' % str(heartBeats))
@@ -120,7 +121,7 @@ def subscribe(destination, headers, receipt=None, version=None):
         if (version != StompSpec.VERSION_1_0):
             raise
     token = (StompSpec.DESTINATION_HEADER, destination) if (subscription is None) else (StompSpec.ID_HEADER, subscription)
-    return frame, tuple(map(unicode, token))
+    return frame, tuple(map(six.text_type, token))
 
 def unsubscribe(token, receipt=None, version=None):
     """Create an **UNSUBSCRIBE** frame.
@@ -306,7 +307,7 @@ def _ackHeaders(frame, transactions):
 def _addReceiptHeader(frame, receipt):
     if not receipt:
         return
-    if not isinstance(receipt, basestring):
+    if not isinstance(receipt, six.string_types):
         raise StompProtocolError('Invalid receipt (not a string): %s' % repr(receipt))
     frame.headers[StompSpec.RECEIPT_HEADER] = str(receipt)
 

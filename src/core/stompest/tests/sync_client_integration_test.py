@@ -1,11 +1,11 @@
 import logging
 import unittest
+import time
 
 from stompest.config import StompConfig
 from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompFrame, StompSpec
 from stompest.sync import Stomp
-import time
 
 logging.basicConfig(level=logging.DEBUG)
 LOG_CATEGORY = __name__
@@ -72,7 +72,7 @@ class SimpleStompIntegrationTest(unittest.TestCase):
             self.assertEquals(frame.body, 'test message without transaction')
             client.ack(frame)
             self.assertFalse(client.canRead(0))
-        frames = [client.receiveFrame() for _ in xrange(2)]
+        frames = [client.receiveFrame() for _ in range(2)]
         frames = list(sorted(frames, key=lambda f: f.command))
         frame = frames[0]
         client.ack(frame)
@@ -88,7 +88,7 @@ class SimpleStompIntegrationTest(unittest.TestCase):
         except RuntimeError as e:
             self.assertEquals(str(e), 'poof')
         else:
-            raise
+            raise Exception
         self.assertFalse(client.canRead(self.TIMEOUT))
 
         client.disconnect()
@@ -132,7 +132,7 @@ class SimpleStompIntegrationTest(unittest.TestCase):
         try:
             client.connect(host=VIRTUALHOST, versions=[version])
         except StompProtocolError as e:
-            print 'Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (e, version)
+            print('Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (e, version))
             return
 
         client.send(self.DESTINATION, 'test message 1')
@@ -180,12 +180,12 @@ class SimpleStompIntegrationTest(unittest.TestCase):
         try:
             client.connect(host=VIRTUALHOST, heartBeats=(heartBeatPeriod, heartBeatPeriod), versions=[version])
         except StompProtocolError as e:
-            print 'Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (e, version)
+            print('Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (e, version))
             return
 
         self.assertTrue((time.time() - client.lastReceived) < 0.1)
         if not (client.serverHeartBeat and client.clientHeartBeat):
-            print 'broker does not support heart-beating. disconnecting ...'
+            print('broker does not support heart-beating. disconnecting ...')
             client.disconnect()
             client.close()
             return
@@ -213,12 +213,12 @@ class SimpleStompIntegrationTest(unittest.TestCase):
             self.assertTrue((time.time() - client.lastReceived) < (2.0 * serverHeartBeatInSeconds))
             self.assertTrue((time.time() - client.lastSent) > clientHeartBeatInSeconds)
         else:
-            raise
+            raise Exception
         client.close()
 
     def test_6_integration_stomp_1_1_encoding_and_escaping_headers(self):
         if BROKER == 'rabbitmq':
-            print 'Broker does not support unicode characters. Skipping this test case.'
+            print('Broker does not support unicode characters. Skipping this test case.')
             return
 
         version = StompSpec.VERSION_1_1
@@ -226,7 +226,7 @@ class SimpleStompIntegrationTest(unittest.TestCase):
         try:
             client.connect(host=VIRTUALHOST, versions=[version])
         except StompProtocolError as e:
-            print 'Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (e, version)
+            print('Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (e, version))
             return
 
         specialCharactersHeader = u'fen\xeatre:\r\n'

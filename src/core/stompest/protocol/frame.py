@@ -1,5 +1,8 @@
+import six
+
 from .spec import StompSpec
 from .util import escape
+
 
 class StompFrame(object):
     """This object represents a STOMP frame.
@@ -82,9 +85,12 @@ class StompFrame(object):
 
     def __str__(self):
         """Render the wire-level representation of a STOMP frame."""
-        headers = sorted(self.headers.iteritems()) if self.rawHeaders is None else self.rawHeaders
-        headers = ''.join('%s:%s%s' % (self._encode(self._escape(unicode(key))), self._encode(self._escape(unicode(value))), StompSpec.LINE_DELIMITER) for (key, value) in headers)
-        return StompSpec.LINE_DELIMITER.join([self._encode(unicode(self.command)), headers, '%s%s' % (self.body, StompSpec.FRAME_DELIMITER)])
+        headers = sorted(self.headers.items()) if self.rawHeaders is None else self.rawHeaders
+        headers = ''.join('%s:%s%s' % (
+        self._encode(self._escape(six.text_type(key))), self._encode(self._escape(six.text_type(value))),
+        StompSpec.LINE_DELIMITER) for (key, value) in headers)
+        return StompSpec.LINE_DELIMITER.join(
+            [self._encode(six.text_type(self.command)), headers, '%s%s' % (self.body, StompSpec.FRAME_DELIMITER)])
 
     def info(self):
         """Produce a log-friendly representation of the frame (show only non-trivial content, and truncate the message to INFO_LENGTH characters)."""

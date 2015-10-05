@@ -5,6 +5,7 @@ import socket
 
 from stompest.error import StompConnectTimeout
 
+
 class StompFailoverTransport(object):
     """Looping over this object, you can produce a series of tuples (broker, delay in s). When the failover scheme does not allow further failover, a :class:`~.error.StompConnectTimeout` error is raised.
     
@@ -82,7 +83,7 @@ class StompFailoverTransport(object):
         if self._reconnectAttempts == 0:
             return 0
         if (self._maxReconnectAttempts != -1) and (self._reconnectAttempts > self._maxReconnectAttempts):
-            raise StompConnectTimeout('Reconnect timeout: %d attempts' % self._maxReconnectAttempts)
+            raise StompConnectTimeout(u'Reconnect timeout: {0:d} attempts'.format(self._maxReconnectAttempts))
         delay = max(0, (min(self._reconnectDelay + (random.random() * options['reconnectDelayJitter']), options['maxReconnectDelay'])))
         self._reconnectDelay *= (options['backOffMultiplier'] if options['useExponentialBackOff'] else 1)
         return delay / 1000.0
@@ -177,15 +178,15 @@ class StompFailoverUri(object):
 
             try:
                 self._setOptions(options)
-            except Exception, msg:
+            except Exception as msg:
                 raise ValueError('invalid options: %s' % msg)
 
             try:
                 self._setBrokers(uri)
-            except Exception, msg:
+            except Exception as msg:
                 raise ValueError('invalid broker(s): %s' % msg)
 
-        except ValueError, msg:
+        except ValueError as msg:
             raise ValueError('invalid uri: %s [%s]' % (self.uri, msg))
 
     def _setBrokers(self, uri):
@@ -197,7 +198,7 @@ class StompFailoverUri(object):
         self.brokers = brokers
 
     def _setOptions(self, options=None):
-        _options = dict((k, o.default) for (k, o) in self._SUPPORTED_OPTIONS.iteritems())
+        _options = dict((k, o.default) for (k, o) in self._SUPPORTED_OPTIONS.items())
         if options:
             _options.update((k, self._SUPPORTED_OPTIONS[k].parser(v)) for (k, _, v) in (o.partition('=') for o in options.split(',')))
         self.options = _options

@@ -5,6 +5,7 @@ from stompest.error import StompFrameError
 from stompest.protocol import commands, StompFrame, StompParser, StompSpec
 from stompest.protocol.frame import StompHeartBeat
 
+
 class StompParserTest(unittest.TestCase):
     def _generate_bytes(self, stream):
         for byte in stream:
@@ -74,7 +75,7 @@ class StompParserTest(unittest.TestCase):
         disconnect = commands.disconnect()
         frame = '\n%s\n' % disconnect
         parser.add(2 * frame)
-        for _ in xrange(2):
+        for _ in range(2):
             self.assertEqual(parser.get(), disconnect)
         self.assertEqual(parser.get(), None)
 
@@ -161,7 +162,7 @@ class StompParserTest(unittest.TestCase):
                 raise
             else:
                 if not bodyAllowed:
-                    raise
+                    raise StompFrameError("Body not allowed")
 
     def test_strip_line_delimiter(self):
         queue = '/queue/test'

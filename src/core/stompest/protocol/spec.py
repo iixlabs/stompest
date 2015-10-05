@@ -1,5 +1,7 @@
 import codecs
+
 from stompest.error import StompProtocolError
+
 
 class StompSpec(object):
     """This class hosts all constants related to the STOMP protocol specification in its various versions. There really isn't much to document, but you are invited to take a look at all available constants in the source code. Wait a minute ... one attribute is particularly noteworthy, name :attr:`DEFAULT_VERSION` --- which currently is :obj:`'1.0'` (but this may change in upcoming stompest releases, so you're advised to always explicitly define which STOMP protocol version you are going to use).
@@ -24,18 +26,9 @@ class StompSpec(object):
     UNSUBSCRIBE = u'UNSUBSCRIBE'
 
     CLIENT_COMMANDS = {
-        VERSION_1_0: set([
-            ABORT, ACK, BEGIN, COMMIT, CONNECT, DISCONNECT,
-            SEND, SUBSCRIBE, UNSUBSCRIBE
-        ]),
-        VERSION_1_1: set([
-            ABORT, ACK, BEGIN, COMMIT, CONNECT, DISCONNECT,
-            NACK, SEND, STOMP, SUBSCRIBE, UNSUBSCRIBE
-        ]),
-        VERSION_1_2: set([
-            ABORT, ACK, BEGIN, COMMIT, CONNECT, DISCONNECT,
-            NACK, SEND, STOMP, SUBSCRIBE, UNSUBSCRIBE
-        ])
+        VERSION_1_0: {ABORT, ACK, BEGIN, COMMIT, CONNECT, DISCONNECT, SEND, SUBSCRIBE, UNSUBSCRIBE},
+        VERSION_1_1: {ABORT, ACK, BEGIN, COMMIT, CONNECT, DISCONNECT, NACK, SEND, STOMP, SUBSCRIBE, UNSUBSCRIBE},
+        VERSION_1_2: {ABORT, ACK, BEGIN, COMMIT, CONNECT, DISCONNECT, NACK, SEND, STOMP, SUBSCRIBE, UNSUBSCRIBE}
     }
 
     CONNECTED = u'CONNECTED'
@@ -44,18 +37,18 @@ class StompSpec(object):
     RECEIPT = u'RECEIPT'
 
     SERVER_COMMANDS = {
-        VERSION_1_0: set([CONNECTED, ERROR, MESSAGE, RECEIPT]),
-        VERSION_1_1: set([CONNECTED, ERROR, MESSAGE, RECEIPT]),
-        VERSION_1_2: set([CONNECTED, ERROR, MESSAGE, RECEIPT])
+        VERSION_1_0: {CONNECTED, ERROR, MESSAGE, RECEIPT},
+        VERSION_1_1: {CONNECTED, ERROR, MESSAGE, RECEIPT},
+        VERSION_1_2: {CONNECTED, ERROR, MESSAGE, RECEIPT}
     }
 
     COMMANDS = dict(CLIENT_COMMANDS)
-    for (version, commands) in SERVER_COMMANDS.iteritems():
+    for (version, commands) in SERVER_COMMANDS.items():
         COMMANDS.setdefault(version, set()).update(commands)
 
     COMMANDS_BODY_ALLOWED = {
-        VERSION_1_1: set([SEND, MESSAGE, ERROR]),
-        VERSION_1_2: set([SEND, MESSAGE, ERROR])
+        VERSION_1_1: {SEND, MESSAGE, ERROR},
+        VERSION_1_2: {SEND, MESSAGE, ERROR}
     }
 
     CODECS = {  # for command and headers
@@ -78,8 +71,8 @@ class StompSpec(object):
     }
     COMMANDS_ESCAPE_EXCLUDED = {
         VERSION_1_0: COMMANDS[VERSION_1_0],
-        VERSION_1_1: set([CONNECT, CONNECTED]),
-        VERSION_1_2: set([CONNECT, CONNECTED])
+        VERSION_1_1: {CONNECT, CONNECTED},
+        VERSION_1_2: {CONNECT, CONNECTED}
     }
 
     FRAME_DELIMITER = '\x00'
@@ -108,7 +101,7 @@ class StompSpec(object):
     ACK_AUTO = u'auto'
     ACK_CLIENT = u'client'
     ACK_CLIENT_INDIVIDUAL = u'client-individual'
-    CLIENT_ACK_MODES = set([ACK_CLIENT, ACK_CLIENT_INDIVIDUAL])
+    CLIENT_ACK_MODES = {ACK_CLIENT, ACK_CLIENT_INDIVIDUAL}
 
     HEART_BEAT_SEPARATOR = ','
 

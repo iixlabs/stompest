@@ -152,7 +152,7 @@ class SimpleStompTest(unittest.TestCase):
 
         try:
             with stomp.transaction(transaction):
-                raise
+                raise Exception
         except:
             args, _ = stomp._transport.send.call_args
             sentFrame = args[0]

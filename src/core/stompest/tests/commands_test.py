@@ -73,7 +73,14 @@ class CommandsTest(unittest.TestCase):
         self.assertEquals(commands.ack(StompFrame(StompSpec.MESSAGE, {StompSpec.MESSAGE_ID_HEADER: 'hi', StompSpec.SUBSCRIPTION_HEADER: 'there', '4711': '0815', StompSpec.TRANSACTION_HEADER: 'man'})), StompFrame(command=StompSpec.ACK, headers={StompSpec.MESSAGE_ID_HEADER: 'hi', StompSpec.SUBSCRIPTION_HEADER: 'there'}))
         self.assertEquals(commands.ack(StompFrame(StompSpec.MESSAGE, {StompSpec.MESSAGE_ID_HEADER: 'hi', StompSpec.SUBSCRIPTION_HEADER: 'there', '4711': '0815', StompSpec.TRANSACTION_HEADER: 'man'}), ['man'], '4711'), StompFrame(command=StompSpec.ACK, headers={StompSpec.MESSAGE_ID_HEADER: 'hi', StompSpec.SUBSCRIPTION_HEADER: 'there', StompSpec.TRANSACTION_HEADER: 'man', StompSpec.RECEIPT_HEADER: '4711'}))
         self.assertEquals(commands.ack(StompFrame(StompSpec.MESSAGE, {StompSpec.MESSAGE_ID_HEADER: 'hi', StompSpec.SUBSCRIPTION_HEADER: 'there', StompSpec.TRANSACTION_HEADER: 'man'}, version=StompSpec.VERSION_1_1)), StompFrame(command=StompSpec.ACK, headers={StompSpec.MESSAGE_ID_HEADER: 'hi', StompSpec.SUBSCRIPTION_HEADER: 'there'}))
-        self.assertEquals(commands.ack(StompFrame(StompSpec.MESSAGE, {StompSpec.MESSAGE_ID_HEADER: 'hi', StompSpec.SUBSCRIPTION_HEADER: 'there', '4711': '0815', StompSpec.TRANSACTION_HEADER: 'man'}, version=StompSpec.VERSION_1_1), transactions=set(['man', 'woman'])), StompFrame(command=StompSpec.ACK, headers={StompSpec.MESSAGE_ID_HEADER: 'hi', StompSpec.SUBSCRIPTION_HEADER: 'there', StompSpec.TRANSACTION_HEADER: 'man'}))
+        self.assertEquals(commands.ack(StompFrame(StompSpec.MESSAGE, {StompSpec.MESSAGE_ID_HEADER: 'hi',
+                                                                      StompSpec.SUBSCRIPTION_HEADER: 'there',
+                                                                      '4711': '0815',
+                                                                      StompSpec.TRANSACTION_HEADER: 'man'},
+                                                  version=StompSpec.VERSION_1_1), transactions={'man', 'woman'}),
+                          StompFrame(command=StompSpec.ACK,
+                                     headers={StompSpec.MESSAGE_ID_HEADER: 'hi', StompSpec.SUBSCRIPTION_HEADER: 'there',
+                                              StompSpec.TRANSACTION_HEADER: 'man'}))
         self.assertRaises(StompProtocolError, commands.ack, StompFrame(StompSpec.CONNECTED, {StompSpec.MESSAGE_ID_HEADER: 'hi'}, version=StompSpec.VERSION_1_0))
         self.assertRaises(StompProtocolError, commands.ack, StompFrame(StompSpec.CONNECTED, {StompSpec.MESSAGE_ID_HEADER: 'hi'}, version=StompSpec.VERSION_1_1))
         self.assertRaises(StompProtocolError, commands.ack, StompFrame(StompSpec.MESSAGE, {StompSpec.SUBSCRIPTION_HEADER: 'hi'}))

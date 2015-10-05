@@ -1,11 +1,11 @@
 import collections
+
 import cStringIO
-
 from stompest.error import StompFrameError
-
 from .frame import StompFrame, StompHeartBeat
 from .spec import StompSpec
 from .util import unescape
+
 
 class StompParser(object):
     """This is a parser for a wire-level byte-stream of STOMP frames.
@@ -124,9 +124,10 @@ class StompParser(object):
                 name, value = header.split(StompSpec.HEADER_SEPARATOR, 1)
             except ValueError:
                 self._raise('No separator in header line: %s' % header)
-            header = tuple(map(self._unescape, (name, value)))
-            self._frame.rawHeaders.append(header)
-            self._transition('headers')
+            else:
+                header = tuple(map(self._unescape, (name, value)))
+                self._frame.rawHeaders.append(header)
+                self._transition('headers')
         else:
             self._length = int(self._frame.headers.get(StompSpec.CONTENT_LENGTH_HEADER, -1))
             self._transition('body')
