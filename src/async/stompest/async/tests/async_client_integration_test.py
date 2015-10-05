@@ -109,11 +109,11 @@ class HandlerExceptionWithErrorQueueIntegrationTestCase(AsyncClientBaseTestCase)
     @defer.inlineCallbacks
     def _test_onhandlerException_ackMessage_filterReservedHdrs_send2ErrorQ_and_disconnect(self, version):
         if version not in commands.versions(VERSION):
-            print 'Skipping test case (version %s is not configured)' % VERSION
+            print('Skipping test case (version %s is not configured)' % VERSION)
             defer.returnValue(None)
 
         if BROKER == 'rabbitmq':
-            print 'RabbitMQ does not support selector header'
+            print('RabbitMQ does not support selector header')
             defer.returnValue(None)
 
         config = self.getConfig(version)
@@ -122,7 +122,7 @@ class HandlerExceptionWithErrorQueueIntegrationTestCase(AsyncClientBaseTestCase)
         try:
             yield client.connect(host=VIRTUALHOST, versions=[version])
         except StompProtocolError as e:
-            print 'Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (e, version)
+            print('Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (e, version))
             defer.returnValue(None)
 
         # enqueue two messages
@@ -153,7 +153,7 @@ class HandlerExceptionWithErrorQueueIntegrationTestCase(AsyncClientBaseTestCase)
         except StompestTestError:
             pass
         else:
-            raise
+            raise Exception
 
         client = async.Stomp(config) # take a fresh client to prevent replay (we were disconnected by an error)
 
@@ -237,7 +237,7 @@ class HandlerExceptionWithErrorQueueIntegrationTestCase(AsyncClientBaseTestCase)
         except StompestTestError:
             pass
         else:
-            raise
+            raise Exception
 
         # reconnect and subscribe again - consuming retried message and disconnecting
         client = async.Stomp(config) # take a fresh client to prevent replay (we were disconnected by an error)
@@ -371,7 +371,7 @@ class NackTestCase(AsyncClientBaseTestCase):
     @defer.inlineCallbacks
     def _test_nack(self, version):
         if version not in commands.versions(VERSION):
-            print 'Skipping test case (version %s is not configured)' % VERSION
+            print('Skipping test case (version %s is not configured)' % VERSION)
             defer.returnValue(None)
 
         config = self.getConfig(version)
@@ -380,7 +380,7 @@ class NackTestCase(AsyncClientBaseTestCase):
             client = yield client.connect(host=VIRTUALHOST, versions=[version])
 
         except StompProtocolError as e:
-            print 'Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (version, e)
+            print('Broker does not support STOMP protocol %s. Skipping this test case. [%s]' % (version, e))
             defer.returnValue(None)
 
         client.subscribe(self.queue, {StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL, StompSpec.ID_HEADER: '4711'}, listener=SubscriptionListener(self._nackFrame, ack=False))
@@ -392,7 +392,8 @@ class NackTestCase(AsyncClientBaseTestCase):
         yield client.disconnected
 
         if BROKER == 'activemq':
-            print 'Broker %s by default does not redeliver messages. Will not try and harvest the NACKed message.' % BROKER
+            print(
+                'Broker %s by default does not redeliver messages. Will not try and harvest the NACKed message.' % BROKER)
             return
 
         self.framesHandled = 0
@@ -471,7 +472,7 @@ class HeartBeatTestCase(AsyncClientBaseTestCase):
         except (StompConnectionError, StompProtocolError):
             pass
         else:
-            raise
+            raise Exception
 
 if __name__ == '__main__':
     import sys

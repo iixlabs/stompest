@@ -33,16 +33,16 @@ class ExclusiveWrapperTest(unittest.TestCase):
         def g():
             yield task.deferLater(reactor, 0, lambda: {}[None])
 
-        for _ in xrange(5):
+        for _ in range(5):
             running = g()
-            for _ in xrange(5):
+            for _ in range(5):
                 self.assertRaises(StompAlreadyRunningError, g)
             try:
                 yield running
             except KeyError:
                 pass
             else:
-                raise
+                raise Exception
 
         @exclusive
         def h(*args, **kwargs):
@@ -99,7 +99,7 @@ class InFlightOperationsTest(unittest.TestCase):
         except CancelledError:
             pass
         else:
-            raise
+            raise Exception
         self.assertEquals(list(op), [])
 
         try:
@@ -109,7 +109,7 @@ class InFlightOperationsTest(unittest.TestCase):
         except StompCancelledError as e:
             self.assertEquals(str(e), '4711')
         else:
-            raise
+            raise Exception
         self.assertEquals(list(op), [])
 
         with op(None, logging.getLogger(LOG_CATEGORY)) as w:
@@ -129,7 +129,7 @@ class InFlightOperationsTest(unittest.TestCase):
         except RuntimeError as e:
             self.assertEquals(str(e), 'hi')
         else:
-            raise
+            raise Exception
 
         try:
             with op(None) as w:
@@ -154,7 +154,7 @@ class InFlightOperationsTest(unittest.TestCase):
             except RuntimeError as e:
                 self.assertEquals(str(e), 'hi')
             else:
-                raise
+                raise Exception
             self.assertEquals(list(op), [None])
         self.assertEquals(list(op), [])
 

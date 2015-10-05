@@ -8,7 +8,6 @@ from twisted.trial import unittest
 from stompest.async import Stomp
 from stompest.config import StompConfig
 from stompest.error import StompCancelledError, StompConnectionError, StompConnectTimeout, StompProtocolError
-
 from .broker_simulator import BlackHoleStompServer, ErrorOnConnectStompServer, ErrorOnSendStompServer, RemoteControlViaFrameStompServer
 from stompest.protocol.spec import StompSpec
 from stompest.async.listener import SubscriptionListener
@@ -47,7 +46,7 @@ class AsyncClientConnectTimeoutTestCase(AsyncClientBaseTestCase):
         except StompConnectTimeout:
             pass
         else:
-            raise
+            raise Exception
 
     @defer.inlineCallbacks
     def test_connection_timeout_after_failover(self):
@@ -59,7 +58,7 @@ class AsyncClientConnectTimeoutTestCase(AsyncClientBaseTestCase):
         except StompConnectTimeout:
             pass
         else:
-            raise
+            raise Exception
 
     @defer.inlineCallbacks
     def test_not_connected(self):
@@ -84,7 +83,7 @@ class AsyncClientConnectErrorTestCase(AsyncClientBaseTestCase):
         except StompProtocolError:
             pass
         else:
-            raise
+            raise Exception
 
 class AsyncClientErrorAfterConnectedTestCase(AsyncClientBaseTestCase):
     protocols = [ErrorOnSendStompServer]
@@ -102,7 +101,7 @@ class AsyncClientErrorAfterConnectedTestCase(AsyncClientBaseTestCase):
         except StompProtocolError:
             pass
         else:
-            raise
+            raise Exception
 
 class AsyncClientFailoverOnDisconnectTestCase(AsyncClientBaseTestCase):
     protocols = [RemoteControlViaFrameStompServer, ErrorOnSendStompServer]
@@ -142,7 +141,7 @@ class AsyncClientReplaySubscriptionTestCase(AsyncClientBaseTestCase):
         except StompConnectionError:
             pass
         else:
-            raise
+            raise Exception
 
         self.assertEquals(client.session._subscriptions, {}) # check that no subscriptions have been accepted
         yield client.connect()
@@ -154,7 +153,7 @@ class AsyncClientReplaySubscriptionTestCase(AsyncClientBaseTestCase):
         except StompConnectionError:
             pass
         else:
-            raise
+            raise Exception
 
         self.shutdown = False # the callback handler will not kill the broker connection, but callback self._got_message
         self._got_message = defer.Deferred()
@@ -220,7 +219,7 @@ class AsyncClientDisconnectTimeoutTestCase(AsyncClientBaseTestCase):
         except StompCancelledError:
             pass
         else:
-            raise
+            raise Exception
         self.wait.callback(None)
 
     @defer.inlineCallbacks
@@ -242,7 +241,7 @@ class AsyncClientDisconnectTimeoutTestCase(AsyncClientBaseTestCase):
         except StompConnectionError:
             pass
         else:
-            raise
+            raise Exception
 
         self.wait.callback(None)
 
