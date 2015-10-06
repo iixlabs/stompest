@@ -1,7 +1,7 @@
 import copy
 import functools
 
-import six
+from six import text_type
 
 from stompest.protocol import StompSpec
 
@@ -24,6 +24,6 @@ def cloneFrame(frame, persistent=None):
     frame.unraw()
     headers = filterReservedHeaders(frame.headers)
     if persistent is not None:
-        headers[u'persistent'] = six.text_type(bool(persistent)).lower()
+        headers[u'persistent'] = text_type(bool(persistent)).lower()
     frame.headers = headers
     return frame

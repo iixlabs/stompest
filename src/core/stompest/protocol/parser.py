@@ -1,6 +1,7 @@
 import collections
 
-import cStringIO
+from six import StringIO as cStringIO
+
 from stompest.error import StompFrameError
 from .frame import StompFrame, StompHeartBeat
 from .spec import StompSpec
@@ -76,7 +77,7 @@ class StompParser(object):
         self._next()
 
     def _flush(self):
-        self._buffer = cStringIO.StringIO()
+        self._buffer = cStringIO()
 
     def _next(self):
         self._frame = None

@@ -1,5 +1,3 @@
-import six
-
 from .spec import StompSpec
 from .util import escape
 
@@ -54,7 +52,8 @@ class StompFrame(object):
 
     """
     INFO_LENGTH = 20
-    _KEYWORDS_AND_FIELDS = [('headers', '_headers', {}), ('body', 'body', ''), ('rawHeaders', 'rawHeaders', None), ('version', 'version', StompSpec.DEFAULT_VERSION)]
+    _KEYWORDS_AND_FIELDS = [('headers', '_headers', {}), ('body', 'body', ''), ('rawHeaders', 'rawHeaders', None),
+                            ('version', 'version', StompSpec.DEFAULT_VERSION)]
 
     def __init__(self, command, headers=None, body='', rawHeaders=None, version=None):
         self.version = version
@@ -86,11 +85,32 @@ class StompFrame(object):
     def __str__(self):
         """Render the wire-level representation of a STOMP frame."""
         headers = sorted(self.headers.items()) if self.rawHeaders is None else self.rawHeaders
-        headers = ''.join('%s:%s%s' % (
-        self._encode(self._escape(six.text_type(key))), self._encode(self._escape(six.text_type(value))),
-        StompSpec.LINE_DELIMITER) for (key, value) in headers)
-        return StompSpec.LINE_DELIMITER.join(
-            [self._encode(six.text_type(self.command)), headers, '%s%s' % (self.body, StompSpec.FRAME_DELIMITER)])
+        headers = StompSpec.LINE_DELIMITER.encode().join(
+            b":".join([
+                self._encode(self._escape(key)),
+                self._encode(self._escape(value)),
+            ])
+            for (key, value) in headers
+        )
+        headers = headers + StompSpec.LINE_DELIMITER.encode()
+        return StompSpec.LINE_DELIMITER.encode().join(
+            [self._encode(self.command), headers, self._encode(self.body)]
+        ) + StompSpec.LINE_DELIMITER.encode()
+
+    def __bytes__(self):
+        """Render the wire-level representation of a STOMP frame."""
+        headers = sorted(self.headers.items()) if self.rawHeaders is None else self.rawHeaders
+        headers = StompSpec.LINE_DELIMITER.encode().join(
+            b":".join([
+                self._encode(self._escape(key)),
+                self._encode(self._escape(value)),
+            ])
+            for (key, value) in headers
+        )
+        headers = headers + StompSpec.LINE_DELIMITER.encode()
+        return StompSpec.LINE_DELIMITER.encode().join(
+            [self._encode(self.command), headers, self._encode(self.body)]
+        ) + StompSpec.LINE_DELIMITER.encode()
 
     def info(self):
         """Produce a log-friendly representation of the frame (show only non-trivial content, and truncate the message to INFO_LENGTH characters)."""
@@ -131,6 +151,7 @@ class StompFrame(object):
             return
         self.headers = self.headers
         self.rawHeaders = None
+
 
 class StompHeartBeat(object):
     """This object represents a STOMP heart-beat. Its string representation (via :meth:`__str__`) renders the wire-level STOMP heart-beat."""

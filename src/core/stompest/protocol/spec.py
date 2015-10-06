@@ -51,12 +51,7 @@ class StompSpec(object):
         VERSION_1_2: {SEND, MESSAGE, ERROR}
     }
 
-    CODECS = {  # for command and headers
-        VERSION_1_0: 'ascii'
-    }
-    CODECS = dict([
-        (version, codecs.lookup(CODECS.get(version, 'utf-8'))) for version in VERSIONS
-    ])
+    CODECS = {version: codecs.lookup('ascii' if version == '1.0' else 'utf-8') for version in VERSIONS}
 
     LINE_DELIMITER = '\n'
     STRIP_LINE_DELIMITER = {

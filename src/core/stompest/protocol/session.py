@@ -29,7 +29,7 @@ import itertools
 import time
 import uuid
 
-import commands
+from stompest.protocol import commands
 from stompest.error import StompProtocolError
 
 
@@ -48,7 +48,10 @@ class StompSession(object):
     def __init__(self, version=None, check=True):
         self.version = version
         self._check = check
-        self._nextSubscription = itertools.count().next
+        try:
+            self._nextSubscription = itertools.count().next
+        except AttributeError:
+            self._nextSubscription = itertools.count().__next__
         self._reset()
         self._flush()
 

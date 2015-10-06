@@ -3,8 +3,11 @@ import socket
 import time
 import errno
 
+from six import binary_type
+
 from stompest.error import StompConnectionError
 from stompest.protocol import StompParser
+
 
 class StompFrameTransport(object):
     factory = StompParser
@@ -32,8 +35,8 @@ class StompFrameTransport(object):
                 files, _, _ = select.select([self._socket], [], [])
             else:
                 files, _, _ = select.select([self._socket], [], [], timeout)
-        except select.error as (code, msg):
-            if code == errno.EINTR:
+        except select.error as e:
+            if e.errno == errno.EINTR:
                 if timeout is None:
                     return self.canRead()
                 else:
@@ -72,7 +75,7 @@ class StompFrameTransport(object):
             self._parser.add(data)
 
     def send(self, frame):
-        self._write(str(frame))
+        self._write(frame)
 
     def setVersion(self, version):
         self._parser.version = version
@@ -87,6 +90,6 @@ class StompFrameTransport(object):
     def _write(self, data):
         self._check()
         try:
-            self._socket.sendall(data)
+            self._socket.sendall(binary_type(data))
         except IOError as e:
             raise StompConnectionError('Could not send to connection [%s]' % e)
