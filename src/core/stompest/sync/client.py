@@ -27,7 +27,6 @@ import time
 from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompFailoverTransport, StompSession
 from stompest.util import checkattr
-
 from .transport import StompFrameTransport
 
 LOG_CATEGORY = __name__
@@ -75,6 +74,7 @@ class Stomp(object):
         .. seealso :: The :mod:`.protocol.failover` and :mod:`.protocol.session` modules for the details of subscription replay and failover transport.
         """
         try:  # preserve existing connection
+            # noinspection PyStatementEffect
             self._transport
         except StompConnectionError:
             pass
@@ -83,7 +83,12 @@ class Stomp(object):
 
         try:
             for (broker, connectDelay) in self._failover:
-                transport = self._transportFactory(broker['host'], broker['port'])
+                transport = self._transportFactory(
+                    broker['host'],
+                    broker['port'],
+                    protocol=broker['protocol'],
+                    ssl_context=self._config.ssl_config.context
+                )
                 if connectDelay:
                     self.log.debug('Delaying connect attempt for %d ms' % int(connectDelay * 1000))
                     time.sleep(connectDelay)
