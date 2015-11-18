@@ -62,7 +62,6 @@ class StompFrameTransport(object):
             self._socket = socket.create_connection((self.host, self.port), **kwargs)
             if self.protocol == 'ssl':
                 if self.ssl_context is None:
-                    # noinspection PyUnresolvedReferences
                     self.ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
                 if ssl.HAS_SNI:
                     self._socket = self.ssl_context.wrap_socket(self._socket, server_hostname=self.host)

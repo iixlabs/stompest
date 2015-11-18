@@ -74,7 +74,6 @@ class Stomp(object):
         .. seealso :: The :mod:`.protocol.failover` and :mod:`.protocol.session` modules for the details of subscription replay and failover transport.
         """
         try:  # preserve existing connection
-            # noinspection PyStatementEffect
             self._transport
         except StompConnectionError:
             pass

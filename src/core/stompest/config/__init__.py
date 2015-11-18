@@ -40,7 +40,6 @@ class SSLConfig(object):
         """
         if self._context is not None:
             return self._context
-        # noinspection PyUnresolvedReferences
         context = create_default_context(Purpose.CLIENT_AUTH)
         if self.ssl_version is not None:
             context.protocol = self.ssl_version
