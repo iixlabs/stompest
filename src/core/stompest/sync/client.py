@@ -86,7 +86,7 @@ class Stomp(object):
                     broker['host'],
                     broker['port'],
                     protocol=broker['protocol'],
-                    ssl_context=self._config.ssl_config.context
+                    sslContext=self._config.sslConfig.context
                 )
                 if connectDelay:
                     self.log.debug('Delaying connect attempt for %d ms' % int(connectDelay * 1000))

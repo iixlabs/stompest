@@ -13,7 +13,7 @@ class StompFrameTransport(object):
 
     READ_SIZE = 4096
 
-    def __init__(self, host, port, protocol, ssl_context=None):
+    def __init__(self, host, port, protocol, sslContext=None):
         """
 
         :param host:
@@ -22,13 +22,13 @@ class StompFrameTransport(object):
         :type port: int
         :param protocol:
         :type protocol: str
-        :param ssl_context:
-        :type ssl_context: ssl.SSLContext
+        :param sslContext:
+        :type sslContext: ssl.SSLContext
         """
         self.host = host
         self.port = port
         self.protocol = protocol
-        self.ssl_context = ssl_context
+        self.sslContext = sslContext
 
         self._socket = None
         self._parser = self.factory()
@@ -61,12 +61,12 @@ class StompFrameTransport(object):
         try:
             self._socket = socket.create_connection((self.host, self.port), **kwargs)
             if self.protocol == 'ssl':
-                if self.ssl_context is None:
-                    self.ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                if self.sslContext is None:
+                    self.sslContext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
                 if ssl.HAS_SNI:
-                    self._socket = self.ssl_context.wrap_socket(self._socket, server_hostname=self.host)
+                    self._socket = self.sslContext.wrap_socket(self._socket, server_hostname=self.host)
                 else:
-                    self._socket = self.ssl_context.wrap_socket(self._socket)
+                    self._socket = self.sslContext.wrap_socket(self._socket)
         except IOError as e:
             raise StompConnectionError('Could not establish connection [%s]' % e)
         self._parser.reset()
