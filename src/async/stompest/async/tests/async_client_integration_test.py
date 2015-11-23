@@ -458,7 +458,7 @@ class HeartBeatTestCase(AsyncClientBaseTestCase):
 
     @defer.inlineCallbacks
     def test_heart_beat(self):
-        port = 61612 if (BROKER == 'activemq') else PORT
+        port = 61613 if (BROKER == 'activemq') else PORT
         config = self.getConfig(StompSpec.VERSION_1_1, port)
         client = async.Stomp(config)
         yield client.connect(host=VIRTUALHOST, heartBeats=(250, 250))

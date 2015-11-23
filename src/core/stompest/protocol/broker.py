@@ -24,3 +24,7 @@ class Broker(object):
 
     def __getitem__(self, item):
         return getattr(self, item)
+
+    def __eq__(self, other):
+        assert isinstance(other, Broker)
+        return self.protocol == other.protocol and self.host == other.host and self.port == other.port
