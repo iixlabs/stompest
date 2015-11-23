@@ -33,7 +33,6 @@ from twisted.internet import defer, task
 from stompest.error import StompConnectionError, StompFrameError
 from stompest.protocol import StompSession, StompSpec
 from stompest.util import checkattr
-
 from . import util, listener
 from .protocol import StompProtocolCreator
 
@@ -55,11 +54,22 @@ class Stomp(object):
     protocolCreatorFactory = StompProtocolCreator
 
     def __init__(self, config, listenersFactory=None, endpointFactory=None):
+        """
+
+        :param config:
+        :type config: stompest.config.StompConfig
+        :param listenersFactory:
+        :type listenersFactory:
+        :param endpointFactory:
+        :type endpointFactory: (dict[str, str], stompest.config.StompConfig) -> twisted.internet.endpoints.SSL4ClientEndpoint | twisted.internet.endpoints.TCP4ClientEndpoint
+        :return:
+        :rtype:
+        """
         self._config = config
         self._session = StompSession(self._config.version, self._config.check)
 
         self._listenersFactory = listenersFactory or listener.defaultListeners
-        self._protocolCreator = self.protocolCreatorFactory(self._config.uri, endpointFactory or util.endpointFactory)
+        self._protocolCreator = self.protocolCreatorFactory(self._config, endpointFactory or util.endpointFactory)
 
         self.log = logging.getLogger(LOG_CATEGORY)
 
