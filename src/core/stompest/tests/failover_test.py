@@ -6,12 +6,14 @@ from mock import patch
 
 from stompest.error import StompConnectTimeout
 from stompest.protocol import StompFailoverUri, StompFailoverTransport
+from stompest.protocol.broker import Broker
+
 
 class StompFailoverUriTest(unittest.TestCase):
     def test_configuration(self):
         uri = 'tcp://localhost:61613'
         configuration = StompFailoverUri(uri)
-        self.assertEquals(configuration.brokers, [{'host': 'localhost', 'protocol': 'tcp', 'port': 61613}])
+        self.assertEquals(configuration.brokers, [Broker(**{'host': 'localhost', 'protocol': 'tcp', 'port': 61613})])
         self.assertEquals(configuration.options, {'priorityBackup': False, 'initialReconnectDelay': 10, 'reconnectDelayJitter': 0, 'maxReconnectDelay': 30000, 'backOffMultiplier': 2.0, 'startupMaxReconnectAttempts': 0, 'maxReconnectAttempts':-1, 'useExponentialBackOff': True, 'randomize': True})
 
         uri = 'tcp://123.456.789.0:61616?randomize=true,maxReconnectAttempts=-1,priorityBackup=true'
@@ -19,7 +21,8 @@ class StompFailoverUriTest(unittest.TestCase):
         self.assertTrue(configuration.options['randomize'])
         self.assertEquals(configuration.options['priorityBackup'], True)
         self.assertEquals(configuration.options['maxReconnectAttempts'], -1)
-        self.assertEquals(configuration.brokers, [{'host': '123.456.789.0', 'protocol': 'tcp', 'port': 61616}])
+        self.assertEquals(configuration.brokers,
+                          [Broker(**{'host': '123.456.789.0', 'protocol': 'tcp', 'port': 61616})])
 
         uri = 'failover:(tcp://primary:61616,tcp://secondary:61616)?randomize=false,maxReconnectAttempts=2,backOffMultiplier=3.0'
         configuration = StompFailoverUri(uri)
@@ -28,13 +31,13 @@ class StompFailoverUriTest(unittest.TestCase):
         self.assertEquals(configuration.options['backOffMultiplier'], 3.0)
         self.assertEquals(configuration.options['maxReconnectAttempts'], 2)
         self.assertEquals(configuration.brokers, [
-            {'host': 'primary', 'protocol': 'tcp', 'port': 61616},
-            {'host': 'secondary', 'protocol': 'tcp', 'port': 61616}
+            Broker(**{'host': 'primary', 'protocol': 'tcp', 'port': 61616}),
+            Broker(**{'host': 'secondary', 'protocol': 'tcp', 'port': 61616})
         ])
 
     def test_configuration_invalid_uris(self):
         for uri in [
-            'ssl://localhost:61613', 'tcp://:61613', 'tcp://61613', 'tcp:localhost:61613', 'tcp:/localhost',
+            'tcp://:61613', 'tcp://61613', 'tcp:localhost:61613', 'tcp:/localhost',
             'tcp://localhost:', 'tcp://localhost:a', 'tcp://localhost:61613?randomize=1', 'tcp://localhost:61613?randomize=True',
             'tcp://localhost:61613??=False', 'tcp://localhost:61613?a=False', 'tcp://localhost:61613?maxReconnectDelay=False'
             'failover:(tcp://primary:61616, tcp://secondary:61616)', 'failover:tcp://primary:61616, tcp://secondary:61616',
@@ -47,16 +50,16 @@ class StompFailoverTest(unittest.TestCase):
         uri = 'failover:tcp://remote1:61615,tcp://localhost:61616,tcp://remote2:61617?randomize=false,startupMaxReconnectAttempts=3,initialReconnectDelay=7,backOffMultiplier=3.0,maxReconnectAttempts=1'
         protocol = StompFailoverTransport(uri)
         expectedDelaysAndBrokers = [
-            (0, {'host': 'remote1', 'protocol': 'tcp', 'port': 61615}),
-            (0.007, {'host': 'localhost', 'protocol': 'tcp', 'port': 61616}),
-            (0.021, {'host': 'remote2', 'protocol': 'tcp', 'port': 61617}),
-            (0.063, {'host': 'remote1', 'protocol': 'tcp', 'port': 61615})
+            (0, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61615})),
+            (0.007, Broker(**{'host': 'localhost', 'protocol': 'tcp', 'port': 61616})),
+            (0.021, Broker(**{'host': 'remote2', 'protocol': 'tcp', 'port': 61617})),
+            (0.063, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61615}))
         ]
         self._test_failover(iter(protocol), expectedDelaysAndBrokers)
 
         expectedDelaysAndBrokers = [
-            (0, {'host': 'remote1', 'protocol': 'tcp', 'port': 61615}),
-            (0.007, {'host': 'localhost', 'protocol': 'tcp', 'port': 61616})
+            (0, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61615})),
+            (0.007, Broker(**{'host': 'localhost', 'protocol': 'tcp', 'port': 61616}))
         ]
         self._test_failover(iter(protocol), expectedDelaysAndBrokers)
 
@@ -64,15 +67,15 @@ class StompFailoverTest(unittest.TestCase):
         protocol = StompFailoverTransport(uri)
 
         expectedDelaysAndBrokers = [
-            (0, {'host': 'remote1', 'protocol': 'tcp', 'port': 61615}),
-            (0.007, {'host': 'localhost', 'protocol': 'tcp', 'port': 61616}),
-            (0.008, {'host': 'remote1', 'protocol': 'tcp', 'port': 61615}),
-            (0.008, {'host': 'localhost', 'protocol': 'tcp', 'port': 61616})
+            (0, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61615})),
+            (0.007, Broker(**{'host': 'localhost', 'protocol': 'tcp', 'port': 61616})),
+            (0.008, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61615})),
+            (0.008, Broker(**{'host': 'localhost', 'protocol': 'tcp', 'port': 61616}))
         ]
         self._test_failover(iter(protocol), expectedDelaysAndBrokers)
 
         expectedDelaysAndBrokers = [
-            (0, {'host': 'remote1', 'protocol': 'tcp', 'port': 61615})
+            (0, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61615}))
         ]
         self._test_failover(iter(protocol), expectedDelaysAndBrokers)
 
@@ -80,9 +83,9 @@ class StompFailoverTest(unittest.TestCase):
         protocol = StompFailoverTransport(uri)
 
         expectedDelaysAndBrokers = [
-            (0, {'host': 'remote1', 'protocol': 'tcp', 'port': 61615}),
-            (0.003, {'host': 'localhost', 'protocol': 'tcp', 'port': 61616}),
-            (0.003, {'host': 'remote1', 'protocol': 'tcp', 'port': 61615})
+            (0, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61615})),
+            (0.003, Broker(**{'host': 'localhost', 'protocol': 'tcp', 'port': 61616})),
+            (0.003, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61615}))
         ]
         self._test_failover(iter(protocol), expectedDelaysAndBrokers)
 
@@ -90,10 +93,10 @@ class StompFailoverTest(unittest.TestCase):
         uri = 'failover:tcp://remote1:61616,tcp://localhost:61616,tcp://127.0.0.1:61615,tcp://remote2:61616?startupMaxReconnectAttempts=3,priorityBackup=true,randomize=false'
         protocol = StompFailoverTransport(uri)
         self._test_failover(iter(protocol), [
-            (0, {'host': 'localhost', 'protocol': 'tcp', 'port': 61616}),
-            (0.01, {'host': '127.0.0.1', 'protocol': 'tcp', 'port': 61615}),
-            (0.02, {'host': 'remote1', 'protocol': 'tcp', 'port': 61616}),
-            (0.04, {'host': 'remote2', 'protocol': 'tcp', 'port': 61616})
+            (0, Broker(**{'host': 'localhost', 'protocol': 'tcp', 'port': 61616})),
+            (0.01, Broker(**{'host': '127.0.0.1', 'protocol': 'tcp', 'port': 61615})),
+            (0.02, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61616})),
+            (0.04, Broker(**{'host': 'remote2', 'protocol': 'tcp', 'port': 61616}))
         ])
 
     @patch('socket.gethostbyname')
@@ -103,10 +106,10 @@ class StompFailoverTest(unittest.TestCase):
         protocol = StompFailoverTransport(uri)
         mock_gethostbyname.side_effect = lambda *_args, **_kwargs: local_ip
         self._test_failover(iter(protocol), [
-            (0, {'host': 'localhost', 'protocol': 'tcp', 'port': 61616}),
-            (0.01, {'host': '127.0.0.1', 'protocol': 'tcp', 'port': 61615}),
-            (0.02, {'host': local_ip, 'protocol': 'tcp', 'port': 61616}),
-            (0.04, {'host': 'remote1', 'protocol': 'tcp', 'port': 61616}),
+            (0, Broker(**{'host': 'localhost', 'protocol': 'tcp', 'port': 61616})),
+            (0.01, Broker(**{'host': '127.0.0.1', 'protocol': 'tcp', 'port': 61615})),
+            (0.02, Broker(**{'host': local_ip, 'protocol': 'tcp', 'port': 61616})),
+            (0.04, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61616})),
         ])
 
     @patch('socket.gethostbyname')
@@ -118,10 +121,10 @@ class StompFailoverTest(unittest.TestCase):
             raise socket.gaierror()
         mock_gethostbyname.side_effect = _broken_gethostbyname
         self._test_failover(iter(protocol), [
-            (0, {'host': 'localhost', 'protocol': 'tcp', 'port': 61616}),
-            (0.01, {'host': '127.0.0.1', 'protocol': 'tcp', 'port': 61615}),
-            (0.02, {'host': 'remote1', 'protocol': 'tcp', 'port': 61616}),
-            (0.04, {'host': local_ip, 'protocol': 'tcp', 'port': 61616}),
+            (0, Broker(**{'host': 'localhost', 'protocol': 'tcp', 'port': 61616})),
+            (0.01, Broker(**{'host': '127.0.0.1', 'protocol': 'tcp', 'port': 61615})),
+            (0.02, Broker(**{'host': 'remote1', 'protocol': 'tcp', 'port': 61616})),
+            (0.04, Broker(**{'host': local_ip, 'protocol': 'tcp', 'port': 61616})),
         ])
 
     def test_randomize(self):
@@ -132,7 +135,7 @@ class StompFailoverTest(unittest.TestCase):
         remoteHosts = ['remote1', 'remote2']
         while (localShuffled * remoteShuffled) == 0:
             protocol = StompFailoverTransport(uri)
-            hosts = [broker['host'] for (broker, _) in itertools.islice(protocol, 4)]
+            hosts = [broker.host for (broker, _) in itertools.islice(protocol, 4)]
             self.assertEquals(set(hosts[:2]), set(localHosts))
             if (hosts[:2] != localHosts):
                 localShuffled += 1

@@ -66,8 +66,17 @@ class StompProtocolCreator(object):
     protocolFactory = StompFactory
     failoverFactory = StompFailoverTransport
 
-    def __init__(self, uri, endpointFactory):
-        self._failover = self.failoverFactory(uri)
+    def __init__(self, config, endpointFactory):
+        """
+        :param config: A :class:`stompest.config.StompConfig` object
+        :type config: stompest.config.StompConfig
+        :param endpointFactory:
+        :type endpointFactory: (stompest.protocol.broker.Broker, stompest.config.StompConfig, int) -> twisted.internet.endpoints.SSL4ClientEndpoint | twisted.internet.endpoints.TCP4ClientEndpoint
+        :return:
+        :rtype:
+        """
+        self._config = config
+        self._failover = self.failoverFactory(self._config.uri)
         self._endpointFactory = endpointFactory
         self.log = logging.getLogger(LOG_CATEGORY)
 
@@ -75,17 +84,21 @@ class StompProtocolCreator(object):
     def connect(self, timeout, *args, **kwargs):
         for (broker, delay) in self._failover:
             yield self._sleep(delay)
-            endpoint = self._endpointFactory(broker, timeout)
-            self.log.info('Connecting to %(host)s:%(port)s ...' % broker)
+            endpoint = self._endpointFactory(broker, self._config, timeout=timeout)
+            self.log.info('Connecting to {broker.host:s}:{broker.port:d} ...'.format(broker=broker))
             try:
                 protocol = yield endpoint.connect(self.protocolFactory(*args, **kwargs))
             except Exception as e:
-                self.log.warning('%s [%s]' % ('Could not connect to %(host)s:%(port)d' % broker, e))
+                self.log.warning(
+                    '{0:s} [{1:s}]'.format(
+                        'Could not connect to {broker.host:s}:{broker.port:d} ...'.format(broker=broker), e
+                    )
+                )
             else:
                 defer.returnValue(protocol)
 
     def _sleep(self, delay):
         if not delay:
             return
-        self.log.info('Delaying connect attempt for %d ms' % int(delay * 1000))
+        self.log.info('Delaying connect attempt for {0:d} ms'.format(int(delay * 1000)))
         return task.deferLater(reactor, delay, lambda: None)

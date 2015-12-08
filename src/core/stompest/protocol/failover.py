@@ -4,6 +4,8 @@ import re
 import socket
 
 from stompest.error import StompConnectTimeout
+from stompest.protocol.broker import Broker
+
 
 class StompFailoverTransport(object):
     """Looping over this object, you can produce a series of tuples (broker, delay in s). When the failover scheme does not allow further failover, a :class:`~.error.StompConnectTimeout` error is raised.
@@ -44,6 +46,10 @@ class StompFailoverTransport(object):
         self._maxReconnectAttempts = None
 
     def __iter__(self):
+        """
+        :return:
+        :rtype: (stompest.protocol.broker.Broker, int|float)
+        """
         self._reset()
         while True:
             for broker in self._brokers():
@@ -73,7 +79,7 @@ class StompFailoverTransport(object):
         if options['randomize']:
             random.shuffle(brokers)
         if options['priorityBackup']:
-            brokers.sort(key=lambda b: self.isLocalHost(b['host']), reverse=True)
+            brokers.sort(key=lambda b: self.isLocalHost(b.host), reverse=True)
         return brokers
 
     def _delay(self):
@@ -135,12 +141,13 @@ class StompFailoverUri(object):
     =============================  ========= ============= ================================================================
     
     .. seealso :: :class:`StompFailoverTransport`, `failover transport <http://activemq.apache.org/failover-transport-reference.html>`_ of ActiveMQ.
+
+    :type brokers: list[Broker]
     """
     _configurationOption = collections.namedtuple('_configurationOption', ['parser', 'default'])
     _bool = {'true': True, 'false': False}.__getitem__
 
     _FAILOVER_PREFIX = 'failover:'
-    _REGEX_URI = re.compile('^(?P<protocol>tcp)://(?P<host>[^:]+):(?P<port>\d+)$')
     _REGEX_BRACKETS = re.compile('^\((?P<uri>.+)\)$')
     _SUPPORTED_OPTIONS = {
         'initialReconnectDelay': _configurationOption(int, 10)
@@ -160,6 +167,8 @@ class StompFailoverUri(object):
     }
 
     def __init__(self, uri):
+        self.brokers = []
+        self.options = {}
         self._parse(uri)
 
     def __repr__(self):
@@ -191,9 +200,7 @@ class StompFailoverUri(object):
     def _setBrokers(self, uri):
         brackets = self._REGEX_BRACKETS.match(uri)
         uri = brackets.groupdict()['uri'] if brackets else uri
-        brokers = [self._REGEX_URI.match(u).groupdict() for u in uri.split(',')]
-        for broker in brokers:
-            broker['port'] = int(broker['port'])
+        brokers = [Broker.fromUri(u) for u in uri.split(',')]
         self.brokers = brokers
 
     def _setOptions(self, options=None):

@@ -11,20 +11,23 @@ from stompest.sync import Stomp
 logging.basicConfig(level=logging.DEBUG)
 
 HOST = 'fakeHost'
-PORT = 61613
+PORT_TCP = 61613
+PORT_SSL = 61612
 
-CONFIG = StompConfig('tcp://%s:%s' % (HOST, PORT), check=False)
+CONFIG_TCP = StompConfig('tcp://%s:%s' % (HOST, PORT_TCP), check=False)
+CONFIG_SSL = StompConfig('ssl://%s:%s' % (HOST, PORT_TCP), check=False)
+
 
 class SimpleStompTest(unittest.TestCase):
     def _get_transport_mock(self, receive=None, config=None):
-        stomp = Stomp(config or CONFIG)
+        stomp = Stomp(config or CONFIG_TCP)
         stomp._transport = Mock()
         if receive:
             stomp._transport.receive.return_value = receive
         return stomp
 
     def _get_connect_mock(self, receive=None, config=None):
-        stomp = Stomp(config or CONFIG)
+        stomp = Stomp(config or CONFIG_TCP)
         stomp._transportFactory = Mock()
         transport = stomp._transportFactory.return_value = Mock()
         transport.host = 'mock'
@@ -41,19 +44,19 @@ class SimpleStompTest(unittest.TestCase):
         self.assertEquals(1, stomp._transport.receive.call_count)
 
     def test_canRead_raises_exception_before_connect(self):
-        stomp = Stomp(CONFIG)
+        stomp = Stomp(CONFIG_TCP)
         self.assertRaises(Exception, stomp.canRead)
 
     def test_send_raises_exception_before_connect(self):
-        stomp = Stomp(CONFIG)
+        stomp = Stomp(CONFIG_TCP)
         self.assertRaises(StompConnectionError, stomp.send, '/queue/foo', 'test message')
 
     def test_subscribe_raises_exception_before_connect(self):
-        stomp = Stomp(CONFIG)
+        stomp = Stomp(CONFIG_TCP)
         self.assertRaises(Exception, stomp.subscribe, '/queue/foo')
 
     def test_disconnect_raises_exception_before_connect(self):
-        stomp = Stomp(CONFIG)
+        stomp = Stomp(CONFIG_TCP)
         self.assertRaises(Exception, stomp.disconnect)
 
     def test_connect_raises_exception_for_bad_host(self):
@@ -111,7 +114,7 @@ class SimpleStompTest(unittest.TestCase):
 
     def test_stomp_version_1_1(self):
         destination = '/queue/foo'
-        stomp = self._get_transport_mock(config=StompConfig('tcp://%s:%s' % (HOST, PORT), version=StompSpec.VERSION_1_1, check=False))
+        stomp = self._get_transport_mock(config=StompConfig('tcp://%s:%s' % (HOST, PORT_TCP), version=StompSpec.VERSION_1_1, check=False))
         stomp._transport = Mock()
         frame = StompFrame(StompSpec.MESSAGE, {StompSpec.MESSAGE_ID_HEADER: '4711', StompSpec.DESTINATION_HEADER: destination})
         self.assertRaises(StompProtocolError, stomp.nack, frame)

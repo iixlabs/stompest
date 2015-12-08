@@ -1,17 +1,18 @@
 import logging
 
 from twisted.internet import defer, reactor
+from twisted.internet.error import AlreadyCancelled
 from twisted.internet.protocol import Factory
 from twisted.python import log
 from twisted.trial import unittest
 
+from broker_simulator import BlackHoleStompServer, ErrorOnConnectStompServer, ErrorOnSendStompServer, \
+    RemoteControlViaFrameStompServer
 from stompest.async import Stomp
+from stompest.async.listener import SubscriptionListener
 from stompest.config import StompConfig
 from stompest.error import StompCancelledError, StompConnectionError, StompConnectTimeout, StompProtocolError
-
-from .broker_simulator import BlackHoleStompServer, ErrorOnConnectStompServer, ErrorOnSendStompServer, RemoteControlViaFrameStompServer
 from stompest.protocol.spec import StompSpec
-from stompest.async.listener import SubscriptionListener
 
 observer = log.PythonLoggingObserver()
 observer.start()
@@ -26,7 +27,7 @@ class AsyncClientBaseTestCase(unittest.TestCase):
     def _create_connection(self, protocol):
         factory = Factory()
         factory.protocol = protocol
-        connection = reactor.listenTCP(0, factory) # @UndefinedVariable
+        connection = reactor.listenTCP(0, factory)
         return connection
 
     def tearDown(self):
@@ -45,6 +46,8 @@ class AsyncClientConnectTimeoutTestCase(AsyncClientBaseTestCase):
         try:
             yield client.connect(connectTimeout=self.TIMEOUT, connectedTimeout=self.TIMEOUT)
         except StompConnectTimeout:
+            pass
+        except StompCancelledError:
             pass
         else:
             raise
@@ -68,7 +71,7 @@ class AsyncClientConnectTimeoutTestCase(AsyncClientBaseTestCase):
         client = Stomp(config)
         try:
             yield client.send('/queue/fake')
-        except StompConnectionError:
+        except (StompConnectionError, AlreadyCancelled):
             pass
 
 class AsyncClientConnectErrorTestCase(AsyncClientBaseTestCase):
@@ -217,7 +220,7 @@ class AsyncClientDisconnectTimeoutTestCase(AsyncClientBaseTestCase):
         yield client.disconnect(timeout=0.02)
         try:
             yield client.disconnected
-        except StompCancelledError:
+        except StompConnectionError:
             pass
         else:
             raise

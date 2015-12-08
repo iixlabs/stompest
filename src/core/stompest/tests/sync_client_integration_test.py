@@ -1,16 +1,16 @@
 import logging
+import time
 import unittest
 
 from stompest.config import StompConfig
 from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompFrame, StompSpec
 from stompest.sync import Stomp
-import time
 
 logging.basicConfig(level=logging.DEBUG)
 LOG_CATEGORY = __name__
 
-from . import HOST, PORT, LOGIN, PASSCODE, VIRTUALHOST, BROKER
+from stompest.tests import HOST, PORT, LOGIN, PASSCODE, VIRTUALHOST, BROKER
 
 class SimpleStompIntegrationTest(unittest.TestCase):
     DESTINATION = '/queue/stompUnitTest'
@@ -171,7 +171,8 @@ class SimpleStompIntegrationTest(unittest.TestCase):
     def test_5_integration_stomp_1_1_heartbeat(self):
         version = StompSpec.VERSION_1_1
 
-        port = 61612 if (BROKER == 'activemq') else PORT # stomp+nio on 61613 does not work properly, so use stomp on 61612
+        port = 61613 if (
+        BROKER == 'activemq') else PORT  # stomp+nio on 61613 does not work properly, so use stomp on 61612
         client = Stomp(self.getConfig(StompSpec.VERSION_1_1, port))
         self.assertEquals(client.lastReceived, None)
         self.assertEquals(client.lastSent, None)

@@ -26,25 +26,33 @@ import time
 
 from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompFailoverTransport, StompSession
+from stompest.sync.sslcontext import syncSSLContext
 from stompest.util import checkattr
-
 from .transport import StompFrameTransport
 
 LOG_CATEGORY = __name__
 
 connected = checkattr('_transport')
 
+
 class Stomp(object):
     """A synchronous STOMP client. This is the successor of the simple STOMP client in stompest 1.x, but the API is not backward compatible.
 
     :param config: A :class:`~.StompConfig` object
-    
+
     .. seealso :: :class:`~.StompConfig` for how to set session configuration options, :class:`~.StompSession` for session state, :mod:`.protocol.commands` for all API options which are documented here.
     """
     _failoverFactory = StompFailoverTransport
     _transportFactory = StompFrameTransport
 
     def __init__(self, config):
+        """
+
+        :param config:
+        :type config: stompest.config.StompConfig
+        :return:
+        :rtype:
+        """
         self.log = logging.getLogger(LOG_CATEGORY)
         self._config = config
         self._session = StompSession(self._config.version, self._config.check)
@@ -83,7 +91,12 @@ class Stomp(object):
 
         try:
             for (broker, connectDelay) in self._failover:
-                transport = self._transportFactory(broker['host'], broker['port'])
+                transport = self._transportFactory(
+                    broker.host,
+                    broker.port,
+                    protocol=broker.protocol,
+                    sslContext=syncSSLContext(self._config.sslConfig)
+                )
                 if connectDelay:
                     self.log.debug('Delaying connect attempt for %d ms' % int(connectDelay * 1000))
                     time.sleep(connectDelay)

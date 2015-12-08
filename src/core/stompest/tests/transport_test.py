@@ -15,6 +15,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 HOST = 'fakeHost'
 PORT = 61613
+PROTOCOL_SSL = 'ssl'
+PROTOCOL_TCP = 'tcp'
 
 class StompFrameTransportTest(unittest.TestCase):
     def _generate_bytes(self, stream):
@@ -24,7 +26,7 @@ class StompFrameTransportTest(unittest.TestCase):
             yield ''
 
     def _get_receive_mock(self, stream):
-        transport = StompFrameTransport(HOST, PORT)
+        transport = StompFrameTransport(HOST, PORT, PROTOCOL_TCP)
         connected = transport._connected = Mock()
         connected.return_value = True
         socket = transport._socket = Mock()
@@ -33,7 +35,7 @@ class StompFrameTransportTest(unittest.TestCase):
         return transport
 
     def _get_send_mock(self):
-        transport = StompFrameTransport(HOST, PORT)
+        transport = StompFrameTransport(HOST, PORT, PROTOCOL_TCP)
         connected = transport._connected = Mock()
         connected.return_value = True
         transport._socket = Mock()

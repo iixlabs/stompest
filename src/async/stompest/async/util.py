@@ -1,14 +1,19 @@
 import collections
 import contextlib
 import functools
+import logging
 
 from twisted.internet import defer, reactor, task
-from twisted.internet.endpoints import clientFromString
+from twisted.internet.endpoints import TCP4ClientEndpoint
 
 from stompest.error import StompAlreadyRunningError, StompNotRunningError
+from stompest.protocol.broker import Broker
 from stompest.util import cloneFrame
 
 MESSAGE_FAILED_HEADER = 'message-failed'
+
+log = logging.getLogger(__name__)
+
 
 class InFlightOperations(collections.MutableMapping):
     def __init__(self, info):
@@ -62,7 +67,7 @@ class WaitingDeferred(defer.Deferred):
     @defer.inlineCallbacks
     def wait(self, timeout=None, fail=None):
         if timeout is not None:
-            timeout = reactor.callLater(timeout, self.errback, fail) # @UndefinedVariable
+            timeout = reactor.callLater(timeout, self.errback, fail)
         try:
             result = yield self
         finally:
@@ -87,10 +92,48 @@ def exclusive(f):
 
     return _exclusive
 
-def endpointFactory(broker, timeout=None):
-    timeout = (':timeout=%d' % timeout) if timeout else ''
-    locals().update(broker)
-    return clientFromString(reactor, '%(protocol)s:host=%(host)s:port=%(port)d%(timeout)s' % locals())
+
+def endpointFactory(broker, config, timeout=None):
+    """
+
+    :param timeout:
+    :type timeout: int
+    :param broker:
+    :type broker: stompest.protocol.broker.Broker
+    :param config:
+    :type config: stompest.config.StompConfig
+    :return:
+    :rtype: twisted.internet.endpoints.TCP4ClientEndpoint | twisted.internet.endpoints.SSL4ClientEndpoint
+    """
+    protocol = broker.protocol.lower()
+    if protocol == Broker.PROTOCOL_TCP:
+        return TCPClientEndpointFactory(broker, config, timeout=timeout)
+    elif protocol == Broker.PROTOCOL_SSL:
+        # As this requires pyOpenSSL, import it locally so as not to enforce the requirement when it is not needed
+        from stompest.async.sslcontext import SSLClientEndpointFactory
+        return SSLClientEndpointFactory(broker, config, timeout=timeout)
+    raise ValueError("Only tcp and ssl protocols are supported.")
+
+
+def TCPClientEndpointFactory(broker, config, timeout=None):
+    """
+
+    :param broker:
+    :type broker: stompest.protocol.broker.Broker
+    :param config:
+    :type config: stompest.config.StompConfig
+    :param timeout:
+    :type timeout: int
+    :return:
+    :rtype: twisted.internet.endpoints.TCP4ClientEndpoint
+    """
+    return TCP4ClientEndpoint(
+        reactor,
+        host=broker.host,
+        port=broker.port,
+        timeout=timeout
+    )
+
 
 def sendToErrorDestination(connection, failure, frame, errorDestination):
     """sendToErrorDestination(failure, frame, errorDestination)
