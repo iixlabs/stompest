@@ -26,7 +26,7 @@ import time
 
 from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompFailoverTransport, StompSession
-from stompest.sync.sslContext import syncSSLContext
+from stompest.sync.sslcontext import syncSSLContext
 from stompest.util import checkattr
 from .transport import StompFrameTransport
 

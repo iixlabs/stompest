@@ -1,11 +1,12 @@
 import errno
 import select
 import socket
-import ssl
 import time
 
 from stompest.error import StompConnectionError
 from stompest.protocol import StompParser
+from stompest.protocol.broker import Broker
+from stompest.sync.sslcontext import sslWrapSocket
 
 
 class StompFrameTransport(object):
@@ -60,13 +61,8 @@ class StompFrameTransport(object):
         kwargs = {} if (timeout is None) else {'timeout': timeout}
         try:
             self._socket = socket.create_connection((self.host, self.port), **kwargs)
-            if self.protocol == 'ssl':
-                if self.sslContext is None:
-                    self.sslContext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-                if ssl.HAS_SNI:
-                    self._socket = self.sslContext.wrap_socket(self._socket, server_hostname=self.host)
-                else:
-                    self._socket = self.sslContext.wrap_socket(self._socket)
+            if self.protocol == Broker.PROTOCOL_SSL:
+                self._socket = sslWrapSocket(self._socket, sslContext=self.sslContext, host=self.host)
         except IOError as e:
             raise StompConnectionError('Could not establish connection [%s]' % e)
         self._parser.reset()

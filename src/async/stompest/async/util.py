@@ -7,6 +7,7 @@ from twisted.internet import defer, reactor, task
 from twisted.internet.endpoints import TCP4ClientEndpoint
 
 from stompest.error import StompAlreadyRunningError, StompNotRunningError
+from stompest.protocol.broker import Broker
 from stompest.util import cloneFrame
 
 MESSAGE_FAILED_HEADER = 'message-failed'
@@ -104,12 +105,12 @@ def endpointFactory(broker, config, timeout=None):
     :return:
     :rtype: twisted.internet.endpoints.TCP4ClientEndpoint | twisted.internet.endpoints.SSL4ClientEndpoint
     """
-    protocol = broker['protocol'].lower()
-    if protocol == 'tcp':
+    protocol = broker.protocol.lower()
+    if protocol == Broker.PROTOCOL_TCP:
         return TCPClientEndpointFactory(broker, config, timeout=timeout)
-    elif protocol == 'ssl':
+    elif protocol == Broker.PROTOCOL_SSL:
         # As this requires pyOpenSSL, import it locally so as not to enforce the requirement when it is not needed
-        from stompest.async.sslContext import SSLClientEndpointFactory
+        from stompest.async.sslcontext import SSLClientEndpointFactory
         return SSLClientEndpointFactory(broker, config, timeout=timeout)
     raise ValueError("Only tcp and ssl protocols are supported.")
 

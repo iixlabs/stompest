@@ -13,10 +13,19 @@ def _getSSLVersionFromString(sslVersion):
         ))
 
 
+def sslWrapSocket(socket, sslContext=None, host=None):
+    if sslContext is None:
+        sslContext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    if ssl.HAS_SNI and host is not None:
+        return sslContext.wrap_socket(socket, server_hostname=host)
+    else:
+        return sslContext.wrap_socket(socket)
+
+
 def syncSSLContext(sslConfig):
     """
     :param sslConfig:
-    :type sslConfig: stompest.config.SSLConfig
+    :type sslConfig: stompest.config.sslconfig.SSLConfig
     :return:
     :rtype: ssl.SSLContext
     """

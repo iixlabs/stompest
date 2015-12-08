@@ -1,4 +1,4 @@
-from _ssl import CERT_NONE, CERT_OPTIONAL, CERT_REQUIRED
+from stompest.protocol.sslspec import StompSSLSpec
 
 from OpenSSL import SSL
 from twisted.internet import reactor
@@ -9,19 +9,19 @@ from stompest.async.util import log
 
 
 class AsyncClientSSLContextFactory(ClientContextFactory):
-    __SSLVersions = set([x for x in dir(SSL) if x.endswith("_METHOD")])
-    validSSLVersionStrings = set([x.rsplit("_")[0] for x in __SSLVersions])
+    __SSLVersions = set([x for x in dir(SSL) if x.endswith('_METHOD')])
+    validSSLVersionStrings = set([x.rsplit('_')[0] for x in __SSLVersions])
     validSSLVersionInt = set([getattr(SSL, x) for x in __SSLVersions])
-    validSSLOptions = set([x for x in dir(SSL) if x.startswith("OP_")])
+    validSSLOptions = set([x for x in dir(SSL) if x.startswith('OP_')])
 
     _ssl_to_openssl_verify_mapping = {
-        CERT_NONE: SSL.VERIFY_NONE,
-        CERT_OPTIONAL: SSL.VERIFY_PEER,
-        CERT_REQUIRED: SSL.VERIFY_PEER + SSL.VERIFY_FAIL_IF_NO_PEER_CERT,
+        StompSSLSpec.CERT_NONE: SSL.VERIFY_NONE,
+        StompSSLSpec.CERT_OPTIONAL: SSL.VERIFY_PEER,
+        StompSSLSpec.CERT_REQUIRED: SSL.VERIFY_PEER + SSL.VERIFY_FAIL_IF_NO_PEER_CERT,
     }
 
-    def __init__(self, method='SSLv23', verify=CERT_REQUIRED, options=None, ciphers=None, certFile=None, keyFile=None,
-                 keyFilePassword=None, caFile=None, caPath=None):
+    def __init__(self, method=StompSSLSpec.SSLv23, verify=StompSSLSpec.CERT_REQUIRED, options=None, ciphers=None,
+                 certFile=None, keyFile=None, keyFilePassword=None, caFile=None, caPath=None):
         self.method = self._parseSSLMethod(method)
         self.options = self._parseSSLOptions(options)
         self.verify = verify
@@ -37,7 +37,7 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
             if method in self.validSSLVersionInt:
                 return method
             else:
-                raise ValueError("Invalid sslVersion {}, Valid values for sslVersion are {}".format(
+                raise ValueError('Invalid sslVersion {}, Valid values for sslVersion are {}'.format(
                     method, self.validSSLVersionStrings
                 )
                 )
@@ -46,7 +46,7 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
                 return getattr(SSL, "{}_METHOD".format(method))
             except AttributeError:
                 raise ValueError(
-                    "Invalid sslVersion (method) '{}'. Valid versions are {}".format(
+                    'Invalid sslVersion (method) "{}". Valid versions are {}'.format(
                         method, self.validSSLVersionStrings
                     )
                 )
@@ -58,7 +58,7 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
                 try:
                     result.append(getattr(SSL, option))
                 except AttributeError:
-                    log.warning("Invalid SSL option for this system: '{}', ignoring...".format(option))
+                    log.warning('Invalid SSL option for this system: "{}", ignoring...'.format(option))
         return result
 
     @staticmethod
@@ -77,7 +77,7 @@ class AsyncClientSSLContextFactory(ClientContextFactory):
             ctx = self._contextFactory(self.method)
         except AttributeError:
             raise ValueError(
-                "Invalid sslVersion (method). Valid versions are {}".format(self.validSSLVersionStrings)
+                'Invalid sslVersion (method). Valid versions are {}'.format(self.validSSLVersionStrings)
             )
         for op in self.options:
             ctx.set_options(op)

@@ -2,9 +2,15 @@ import re
 
 
 class Broker(object):
-    _REGEX_URI = re.compile('^(?P<protocol>tcp|ssl)://(?P<host>[^:]+):(?P<port>\d+)$')
+    PROTOCOL_TCP = 'tcp'
+    PROTOCOL_SSL = 'ssl'
+    PROTOCOLS = {PROTOCOL_TCP, PROTOCOL_SSL}
+
+    _REGEX_URI = re.compile('^(?P<protocol>{})://(?P<host>[^:]+):(?P<port>\d+)$'.format('|'.join(PROTOCOLS)))
 
     def __init__(self, protocol, host, port):
+        if protocol not in self.PROTOCOLS:
+            raise ValueError('Invalid protocol "{}". Valid protocols are {}'.format(protocol, self.PROTOCOLS))
         self.protocol = protocol
         self.host = host
         self.port = int(port)
@@ -20,7 +26,10 @@ class Broker(object):
         :return:
         :rtype: Broker
         """
-        return cls(**cls._REGEX_URI.match(uri).groupdict())
+        try:
+            return cls(**cls._REGEX_URI.match(uri).groupdict())
+        except AttributeError:
+            raise ValueError('Invalid URI, must match regex "{}"'.format(cls._REGEX_URI.pattern))
 
     def __getitem__(self, item):
         return getattr(self, item)

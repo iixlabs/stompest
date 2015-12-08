@@ -61,7 +61,7 @@ class Stomp(object):
         :param listenersFactory:
         :type listenersFactory:
         :param endpointFactory:
-        :type endpointFactory: (dict[str, str], stompest.config.StompConfig) -> twisted.internet.endpoints.SSL4ClientEndpoint | twisted.internet.endpoints.TCP4ClientEndpoint
+        :type endpointFactory: (stompest.protocol.broker.Broker, stompest.config.StompConfig) -> twisted.internet.endpoints.SSL4ClientEndpoint | twisted.internet.endpoints.TCP4ClientEndpoint
         :return:
         :rtype:
         """
