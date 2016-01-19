@@ -4,7 +4,7 @@ import re
 class Broker(object):
     PROTOCOL_TCP = 'tcp'
     PROTOCOL_SSL = 'ssl'
-    PROTOCOLS = {PROTOCOL_TCP, PROTOCOL_SSL}
+    PROTOCOLS = set([PROTOCOL_TCP, PROTOCOL_SSL])
 
     _REGEX_URI = re.compile('^(?P<protocol>{})://(?P<host>[^:]+):(?P<port>\d+)$'.format('|'.join(PROTOCOLS)))
 

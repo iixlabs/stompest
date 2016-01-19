@@ -5,15 +5,25 @@ log = logging.getLogger(__name__)
 
 
 def _getSSLVersionFromString(sslVersion):
+    """
+    :type sslVersion: str
+    :rtype: int
+    """
     try:
         return getattr(ssl, "PROTOCOL_{}".format(sslVersion))
     except AttributeError:
-        return ValueError("Invalid sslVersion '{}', valid versions for your system are: {}".format(
+        raise ValueError("Invalid sslVersion '{}', valid versions for your system are: {}".format(
             sslVersion, set([x.lstrip("_")[1] for x in dir(ssl) if x.startswith("PROTOCOL_")])
         ))
 
 
 def sslWrapSocket(socket, sslContext=None, host=None):
+    """
+    :type socket: socket.SocketType
+    :type sslContext: ssl.SSLContext
+    :type host: str
+    :rtype: ssl.SSLSocket
+    """
     if sslContext is None:
         sslContext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     if ssl.HAS_SNI and host is not None:

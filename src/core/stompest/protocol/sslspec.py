@@ -1,5 +1,4 @@
-from _ssl import CERT_REQUIRED, CERT_OPTIONAL, CERT_NONE
-from ssl import _DEFAULT_CIPHERS
+from ssl import CERT_REQUIRED, CERT_OPTIONAL, CERT_NONE, _DEFAULT_CIPHERS
 
 
 class StompSSLSpec(object):
@@ -10,7 +9,7 @@ class StompSSLSpec(object):
     TLSv1_1 = 'TLSv1_1'
     TLSv1_2 = 'TLSv1_2'
 
-    SSL_VERSIONS = {SSLv2, SSLv23, SSLv3, TLSv1, TLSv1_1, TLSv1_2}
+    SSL_VERSIONS = set([SSLv2, SSLv23, SSLv3, TLSv1, TLSv1_1, TLSv1_2])
 
     OP_CIPHER_SERVER_PREFERENCE = 'OP_CIPHER_SERVER_PREFERENCE'
     OP_NO_COMPRESSION = 'OP_NO_COMPRESSION'
@@ -22,7 +21,7 @@ class StompSSLSpec(object):
     OP_SINGLE_DH_USE = 'OP_SINGLE_DH_USE'
     OP_SINGLE_ECDH_USE = 'OP_SINGLE_ECDH_USE'
 
-    SSL_OPTIONS = {
+    SSL_OPTIONS = set([
         OP_CIPHER_SERVER_PREFERENCE,
         OP_NO_COMPRESSION,
         OP_NO_SSLv2,
@@ -32,7 +31,7 @@ class StompSSLSpec(object):
         OP_NO_TLSv1_2,
         OP_SINGLE_DH_USE,
         OP_SINGLE_ECDH_USE
-    }
+    ])
 
     DEFAULT_SSL_OPTIONS = [
         OP_NO_SSLv2,
@@ -49,8 +48,4 @@ class StompSSLSpec(object):
     CERT_OPTIONAL = CERT_OPTIONAL
     CERT_NONE = CERT_NONE
 
-    CERT_OPTIONS = {
-        CERT_REQUIRED,
-        CERT_OPTIONAL,
-        CERT_NONE,
-    }
+    CERT_OPTIONS = set([CERT_REQUIRED, CERT_OPTIONAL, CERT_NONE])
