@@ -6,7 +6,7 @@ class Broker(object):
     PROTOCOL_SSL = 'ssl'
     PROTOCOLS = set([PROTOCOL_TCP, PROTOCOL_SSL])
 
-    _REGEX_URI = re.compile('^(?P<protocol>{})://(?P<host>[^:]+):(?P<port>\d+)$'.format('|'.join(PROTOCOLS)))
+    _REGEX_URI = re.compile('^(?P<protocol>{0})://(?P<host>[^:]+):(?P<port>\d+)$'.format('|'.join(PROTOCOLS)))
 
     def __init__(self, protocol, host, port):
         if protocol not in self.PROTOCOLS:
